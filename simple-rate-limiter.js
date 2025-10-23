@@ -22,8 +22,12 @@ function getCurrentWindow() {
 function checkRateLimit(userId) {
     const currentWindow = getCurrentWindow();
 
+    console.log(`\n[Check] Current Window ID: ${currentWindow}`);
+    console.log(`[Check] Current User: ${userId}`);
+
     // if first time seeing the user
     if (!requestCounts[userId]) {
+        console.log(`[Check] New user - initializing counter`);
         requestCounts[userId] = {
             count: 0,
             window: currentWindow
@@ -31,20 +35,28 @@ function checkRateLimit(userId) {
     }
 
     const userData = requestCounts[userId];
+    console.log(`[Check] Stored Window ID: ${userData.window}`);
+    console.log(`[Check] Count Before Increment: ${userData.count}`);
 
     // Check if this is a new window
     if (userData.window != currentWindow) {
+        console.log(`[Check] New Window Detected - Resetting counter`)
         // we reset for a new window
         userData.count = 0;
         userData.window = currentWindow;
     }
     // we then increment count
     userData.count++
+    console.log(`[Check] Count After Increment: ${userData.count}/${RATE_LIMIT}`);
 
     // We check if over limit
     if (userData.count > RATE_LIMIT) {
+        console.log(`[Check] Rejected - Exceeded Limit`);
         return false; // We reject the request
     }
+
+    const remaining = RATE_LIMIT - userData.count;
+    console.log(`[Check] Allowed - ${remaining} requests remaining`);
     return true;
 }
 
