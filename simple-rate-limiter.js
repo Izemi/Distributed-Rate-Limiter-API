@@ -80,6 +80,18 @@ app.get('/api/resource', (req, res) => {
     });
 });
 
+app.get('/debug', (req, res) => {
+    res.json({
+        currentWindow: getCurrentWindow(),
+        currentTime: new Date().toISOString(),
+        requestCounts: requestCounts,
+        totalUsers: Object.keys(requestCounts).length,
+        config: {
+            windowSize: WINDOW_SIZE,
+            rateLimit: RATE_LIMIT,
+        }
+    })
+})
 // Start server
 const PORT = 3000;
 app.listen(PORT, () => {
