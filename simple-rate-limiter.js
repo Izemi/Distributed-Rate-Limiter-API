@@ -63,20 +63,34 @@ function checkRateLimit(userId) {
 // API endpoint
 app.get('/api/resource', (req, res) => {
     const userID = req.query.user || 'anonymous';
-
     const allowed = checkRateLimit(userID);
+
+    // Calculate remaining requests for headers
+    const userData = requestCounts[userID];
+    const remaining = Math.max(0, RATE_LIMIT - userData.count);
+
+    // Rate limit information to response headers
+    res.setHeader('X-RateLimit-Limit', RATE_LIMIT);
+    res.setHeader('X-RateLimit-Remaining', remaining);
+    res.setHeader('X-RateLimit-Window', WINDOW_SIZE);
 
     if (!allowed) {
         return res.status(429).json({
             error: 'Too many requests',
-            message: `Rate limit: ${RATE_LIMIT} requests per ${WINDOW_SIZE} seconds`
+            message: `Rate limit: ${RATE_LIMIT} requests per ${WINDOW_SIZE} seconds`,
+            retryAfter: WINDOW_SIZE
         })
     }
 
-    // if allowed, we return the resource
+    // if allowed, return resource with rate limit info in body too
     res.json({
         message: "Success!",
-        data: 'Here is your data'
+        data: 'Here is your data',
+        rateLimit: {
+            limit: RATE_LIMIT,
+            remaining: remaining,
+            windowSize: WINDOW_SIZE
+        }
     });
 });
 
