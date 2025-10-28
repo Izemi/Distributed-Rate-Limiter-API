@@ -5,7 +5,7 @@ const logger = require('./logger');
 const redisClient = redis.createClient({
     socket: {
         host: process.env.REDIS_HOST || 'localhost',
-        port: process.env.REDIS_PORT || 6279,
+        port: Number(process.env.REDIS_PORT) || 6379,
         reconnectStrategy: (retries) => {
             if (retries > 10) {
                 logger.error(`[Redis] Max connection attempts reached`, { retries });
@@ -32,11 +32,11 @@ redisClient.on('error', (err) => {
 
 // Connection events
 redisClient.on('connect', () => {
-    logger.info(`[Redis] Connected and ready`);
+    logger.info(`[Redis] Socket connected`);
 });
 
 redisClient.on('ready', () => {
-    logger.info('[Redis] Connected and ready');
+    logger.info('[Redis] Client ready');
 });
 
 redisClient.on('reconnecting', () => {
@@ -53,7 +53,7 @@ redisClient.on('end', () => {
         await redisClient.connect();
         logger.info('[Redis] Initial connection successful');
     } catch (err) {
-        logger.error('[Redis] FATAL: Faild to establish initial connection', {
+        logger.error('[Redis] FATAL: Failed to establish initial connection', {
             message: err.message,
             stack: err.stack,
             host: process.env.REDIS_HOST || 'localhost',
